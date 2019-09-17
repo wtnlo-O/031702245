@@ -1,7 +1,4 @@
 import re
-
-
-
 def xxx():
     str=input("")
     names=str.split('.')                                #以.为标记切分为数组
