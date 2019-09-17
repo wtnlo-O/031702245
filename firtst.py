@@ -1,7 +1,6 @@
 import re
 str=input("")
 
-
 names=str.split('.')                                #以.为标记切分为数组
 for name in names[:-1]:
     erji=name.split(',')[0]                         #以，为标记切分出姓名
