@@ -1,0 +1,253 @@
+from flask import Flask
+import json
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/<string:cards>',methods=["GET"])
+def hello_world(cards):
+    print(cards)
+    card = cards.split("_")
+    fuhao = []  # 存原始数组符号
+    number = []  # 存原始数组牌型
+    ar = [0] * 15  # number计数
+    ab = [0] * 4  # 花色计数
+    s = [0] * 25
+    bb = [0] * 3
+    dd = 0
+    final = [0] * 40
+
+    for i in card:
+        f = i[0]
+        fuhao.append(f)
+        if i[1] == "J":
+            number.append(11)
+        elif i[1] == "Q":
+            number.append(12)
+        elif i[1] == "K":
+            number.append(13)
+        elif i[1] == "A":
+            number.append(14)
+        elif i[1:] == "10":
+            number.append(10)
+        else:
+            number.append(int(i[1]))
+    # print(card)
+    # print(fuhao)
+    # print(number)
+
+    for x in number:
+        if x == 2:
+            ar[2] = ar[2] + 1
+        if x == 3:
+            ar[3] = ar[3] + 1
+        if x == 4:
+            ar[4] = ar[4] + 1
+        if x == 5:
+            ar[5] = ar[5] + 1
+        if x == 6:
+            ar[6] = ar[6] + 1
+        if x == 7:
+            ar[7] = ar[7] + 1
+        if x == 8:
+            ar[8] = ar[8] + 1
+        if x == 9:
+            ar[9] = ar[9] + 1
+        if x == 10:
+            ar[10] = ar[10] + 1
+        if x == 11:
+            ar[11] = ar[11] + 1
+        if x == 12:
+            ar[12] = ar[12] + 1
+        if x == 13:
+            ar[13] = ar[13] + 1
+        if x == 14:
+            ar[14] = ar[14] + 1  # 桶排序
+    # print("ar")
+    # print(ar)
+    for x in fuhao:
+        if x == '$':
+            ab[0] += 1
+        elif x == '&':
+            ab[1] += 1
+        elif x == '*':
+            ab[2] += 1
+        elif x == '#':
+            ab[3] += 1
+    # print("ab")
+    # print(ab)
+
+    for x in ar[2:14]:
+        if x == 0:
+            s[2] = 0
+            break
+        else:
+            s[2] = 1  # 顺子(一条龙)
+
+    for x in ab:
+        if x == 13:
+            s[8] = 1
+            break
+        else:
+            s[8] = 0  # 凑一色
+    if s[2] == 1 and s[8] == 1:  # 顺子&清一色
+        s[1] = 1  # 至尊青龙
+    else:
+        s[1] = 0
+
+    if ar[11] + ar[12] + ar[13] + ar[14] >= 12:  # J,Q,K,A+1
+        s[3] = 1  # 十二皇族
+    else:
+        s[3] = 0
+    # print(s[3])
+
+    count1 = 0
+    for x in ar:
+        if x == 4:
+            count1 += 1
+    if count1 == 3:
+        s[5] = 1  # 三分天下
+    #  print(s[5])
+
+    count2 = 0
+    for x in ar[2:7]:
+        if x >= 1:
+            count2 = 1
+            break
+    if count2 == 1:
+        s[6] = 0
+    else:
+        s[6] = 1
+    # print(s[6])
+
+    count3 = 0
+    for x in ar[9:14]:
+        if x == 1:
+            count3 = 1
+            break
+    if count2 == 0:
+        s[7] = 1  # 全小
+    # print(s[7])
+
+    count5 = 0
+    count6 = 0
+    for x in ar:
+        if x == 3:
+            count5 += 1
+        elif x == 2:
+            count6 += 1
+    if count5 == 2 and count6 == 3:
+        s[9] = 1  # 双怪冲三
+    elif count5 == 4:
+        s[10] = 1  # 四套三条
+    elif count6 == 5 and count5 == 1:
+        s[11] = 1  # 五队三条
+    elif count6 == 6:
+        s[12] = 1  # 六对半
+
+    count7 = 0
+    count8 = 0
+    for x in ab:
+        if x == 3:
+            count7 += 1
+        elif x == 5:
+            count8 += 1
+    if count7 == 1 and count8 == 2:
+        s[14] = 1
+    # print(s[14])
+
+    # print(s[9])
+
+    # 以上为特殊比牌
+
+    if s[1] == 1:
+        final[1] = 1
+    elif s[2] == 1:
+        final[2] = 1
+    elif s[3] == 1 and s[5] == 0:
+        final[3] = 1
+    elif s[5] == 1:
+        final[5] = 1
+    elif s[6] == 1 and s[3] == 0:
+        final[6] = 1
+    elif s[7] == 1:
+        final[7] = 1
+    elif s[8] == 1 and s[1] != 1 and s[2] != 1 and s[3] != 1 and s[5] != 1 and s[6] != 1 and s[7] != 1 and s[9] != 1 and \
+            s[10] != 1 and s[11] != 1 and s[12] != 1 and s[14] != 1:
+        final[8] = 1
+    elif s[9] == 1:
+        final[9] = 1
+    elif s[10] == 1:
+        final[10] = 1
+    elif s[11] == 1:
+        final[11] = 1
+    elif s[12] == 1:
+        final[12] = 1
+    elif s[14] == 1:
+        final[14] = 1
+
+    if final[1] == 1 or final[2] == 1 or final[3] == 1 or final[5] == 1 or final[6] == 1 or final[7] == 1 or final[
+        8] == 1 or final[9] == 1 or final[10] == 1 or final[11] == 1 or final[12] == 1 or final[14] == 1:
+        bb[0] = str(card[0]) + ' ' + str(card[1]) + ' ' + str(card[2])
+        bb[1] = str(card[3]) + ' ' + str(card[4]) + ' ' + str(card[5]) + ' ' + str(card[6]) + ' ' + str(card[7])
+        bb[2] = str(card[8]) + ' ' + str(card[9]) + ' ' + str(card[10]) + ' ' + str(card[11]) + ' ' + str(card[12])
+        print(bb)
+
+    else:
+        number.sort()
+        aa = 14
+        cn = [0] * 15
+        i = 0
+        for x in number:
+            cn[i] = x
+            i += 1
+        t = 0
+        p = 0
+        count9 = 0
+        for x in ar[2:14]:
+            if x >= 1:
+                count9 += 1
+                p += 1
+            else:
+                count9 = 0
+                p += 1
+            if count9 == 5:
+                t = p - 5
+                s[20] = 1  # 同花顺
+                break
+
+
+        if s[20] == 1:
+            bb[2] = ""
+            bb[2] = str(bb[2]) + str(card[t])
+            for x in ar[2:6]:
+                if card[t + 1] == card[t]:
+                    t += 1
+                else:
+                    bb[2] = str(bb[2]) + ' ' + str(card[t + 1])
+                    t += 1
+            bb[1] = str(card[12]) + ' ' + str(card[11]) + ' ' + str(card[4]) + ' ' + str(card[5]) + ' ' + str(card[6])
+            bb[0] = str(card[10]) + ' ' + str(card[8]) + ' ' + str(card[9])
+            print(bb)
+
+        else:
+            bb[0] = str(card[2]) + ' ' + str(card[1]) + ' ' + str(card[0])
+            bb[1] = str(card[7]) + ' ' + str(card[6]) + ' ' + str(card[5]) + ' ' + str(card[4]) + ' ' + str(card[3])
+            bb[2] = str(card[12]) + ' ' + str(card[11]) + ' ' + str(card[10]) + ' ' + str(card[9]) + ' ' + str(card[8])
+            print(bb)
+
+    return json.dumps({"Data": bb})
+
+
+def after_request(resp):
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
+
+
+if __name__ == '__main__':
+    app.after_request(after_request)
+    app.run()
+
+
+
